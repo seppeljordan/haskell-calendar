@@ -3,8 +3,10 @@ import Data.Time.Format
 import Data.Time.LocalTime
 import System.Locale
 
+import Configuration
+
 data Weekday = Monday | Tuesday | Wednesday | Thursday | Friday | Saturday | Sunday
-               deriving (Show, Eq, Enum)
+               deriving (Show, Eq, Enum, Read)
 
 dayNext :: Weekday -> Weekday
 dayNext Sunday = Monday
@@ -46,21 +48,19 @@ instance Monad CalendarMonad where
                                          (state2, value2) = transform1 state1
                                      in (state2, value2)
 
-flipCalendar :: CalendarMonad Bool
-flipCalendar = CalendarMonad $ \day -> (dayNext day, workDay day)
+getWorkDayTable :: (Weekday -> Bool) -> CalendarMonad (Weekday,Bool)
+getWorkDayTable workDay = CalendarMonad $ \day -> (dayNext day, (day, workDay day))
 
-workDayTable :: CalendarMonad (Weekday,Bool)
-workDayTable = CalendarMonad $ \day -> (dayNext day, (day, workDay day))
+workDayList :: IO [Weekday]
+workDayList = let weekdayString :: IO String
+                  weekdayString = fmap (maybe "" id) $ getConfigOption "default.workdays"
+              in fmap ((map read) . words) weekdayString
+         
 
-workDay :: Weekday -> Bool
-workDay Wednesday = True
-workDay Thursday = True
-workDay _ = False
-
-listNextDays :: Weekday -> Int -> CalendarMonad a -> [a]
+listNextDays :: Weekday -> Int -> (Weekday -> Bool) -> [(Weekday, Bool)]
 listNextDays weekday n procedure = let nd 0 accu = return accu
                                        nd m accu = do
-                                         wd <- procedure
+                                         wd <- getWorkDayTable procedure
                                          nd (m-1) (wd:accu)
                                        CalendarMonad runIt = nd n []
                                    in reverse $ snd $ (runIt weekday)
@@ -82,4 +82,5 @@ getCurrentTime = fmap zonedTimeToLocalTime getZonedTime
 
 main = do
   wd <- fmap localTimeToWeekday getCurrentTime
-  putStr $ makeTable $ listNextDays wd 5 workDayTable
+  workdays <- workDayList
+  putStr $ makeTable $ listNextDays wd 5 (\x -> elem x workdays)

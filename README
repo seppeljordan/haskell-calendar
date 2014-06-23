@@ -1,1 +1,5 @@
 A small calendar app implemented in Haskell
+
+The program looks for a configuration file called "rc.con" in the
+directory "~/.workcalendar/" where "~" is the path to the users home
+directory.  You can specify workdays in there.

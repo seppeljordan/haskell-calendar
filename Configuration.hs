@@ -11,6 +11,7 @@ import Data.Text
 configFilePrefix :: String
 configFilePrefix = configDirPrefix ++ "/rc.conf"
 
+configDirPrefix :: String
 configDirPrefix = "/.workcalendar"
 
 configFilePosition :: IO String

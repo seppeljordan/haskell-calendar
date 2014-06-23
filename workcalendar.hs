@@ -80,6 +80,7 @@ localTimeToWeekday lt = let formatString = "%w"
 getCurrentTime :: IO LocalTime
 getCurrentTime = fmap zonedTimeToLocalTime getZonedTime
 
+main :: IO ()
 main = do
   wd <- fmap localTimeToWeekday getCurrentTime
   workdays <- workDayList

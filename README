@@ -3,6 +3,6 @@ License: GPL3
 Author: Sebastian Jordan <sebastian.jordan.mail@googlemail.com>
 
 
-The program looks for a configuration file called "rc.con" in the
+The program looks for a configuration file called "rc.conf" in the
 directory "~/.workcalendar/" where "~" is the path to the users home
 directory.  You can specify workdays in there.

@@ -1,8 +1,3 @@
-import Control.Applicative
-import Data.Time.Format
-import Data.Time.LocalTime
-import System.Locale
-
 import Colors
 import Configuration
 import Calendar
@@ -39,7 +34,7 @@ makeTable dates colorsupport
           makeLine (wd,bool) = "| " ++ show wd ++ "\t | " ++ (workdayToString bool) ++ " |"
           workdayToString :: Bool -> String
           workdayToString True  = condRed ++ "work" ++ condNormal
-          workdayToString False = "free"
+          workdayToString False = condGreen ++ "free" ++ condGreen
           condRed = if colorsupport then red else ""
           condGreen = if colorsupport then green else ""
           condNormal = if colorsupport then normal else ""

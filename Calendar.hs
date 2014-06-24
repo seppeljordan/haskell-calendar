@@ -1,5 +1,6 @@
-module Calendar (Weekday (..),
-                 formatTimeToWeekday)
+module Calendar (Weekday (..), Day, CalendarMonad (..), 
+                 formatTimeToWeekday, getToday, 
+                 getCurrentWeekday, dayNext)
                 
 where
 
@@ -12,12 +13,11 @@ import System.Locale
 data Weekday = Monday | Tuesday | Wednesday | Thursday | Friday | Saturday | Sunday
                deriving (Show, Eq, Enum, Read)
 
-dayNext :: Weekday -> Weekday
-dayNext Sunday = Monday
-dayNext d = succ d
+dayNext :: Day -> Day
+dayNext day = addDays 1 day
 
-formatTimeToWeekday :: FormatTime a => a -> TimeLocale -> Weekday
-formatTimeToWeekday ft timelocale 
+formatTimeToWeekday :: FormatTime a => a -> Weekday
+formatTimeToWeekday ft
     = let formatString = "%w"
           stringToWd s | s == "0" = Sunday
                        | s == "1" = Monday
@@ -28,7 +28,7 @@ formatTimeToWeekday ft timelocale
                        | s == "6" = Saturday
                        | otherwise = error $ 
                                      "stringToWd: only 0 - 6 are valid weekday codes, given was " ++ s
-      in stringToWd $ formatTime timelocale formatString ft
+      in stringToWd $ formatTime defaultTimeLocale formatString ft
 
 -- m a = m (s -> (s,a))
 newtype CalendarMonad a = CalendarMonad (Day -> (Day, a))
@@ -54,3 +54,9 @@ instance Monad CalendarMonad where
                                          CalendarMonad transform1 = ftransform value1
                                          (state2, value2) = transform1 state1
                                      in (state2, value2)
+
+getToday :: IO Day
+getToday = fmap utctDay getCurrentTime
+
+getCurrentWeekday :: IO Weekday
+getCurrentWeekday = fmap formatTimeToWeekday getToday

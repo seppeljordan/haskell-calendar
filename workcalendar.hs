@@ -3,10 +3,21 @@ import Data.Time.Format
 import Data.Time.LocalTime
 import System.Locale
 
+import Colors
 import Configuration
+import Calendar
+import ArgumentHandling
 
+-- Color support?
+colorSupport :: [Argument] -> Bool
+colorSupport args
+    = elem (ColorSupport True) args
+
+-- Program logic
 getWorkDayTable :: (Weekday -> Bool) -> CalendarMonad (Weekday,Bool)
-getWorkDayTable workDay = CalendarMonad $ \day -> (addDay 1 day, (day, workDay day))
+getWorkDayTable workDay 
+    = CalendarMonad $ \day -> let weekday = formatTimeToWeekday day
+                              in (dayNext day, (weekday, workDay weekday))
 
 workDayList :: IO [Weekday]
 workDayList = let weekdayString :: IO String
@@ -22,20 +33,22 @@ listNextDays startDate n procedure = let nd 0 accu = return accu
                                          CalendarMonad runIt = nd n []
                                      in reverse $ snd $ (runIt startDate)
 
-makeTable :: [(Weekday, Bool)] -> String
-makeTable dates = let makeLine :: (Weekday, Bool) -> String
-                      makeLine (wd,bool) = "| " ++ show wd ++ "\t | " ++ (workdayToString bool) ++ " |"
-                      workdayToString :: Bool -> String
-                      workdayToString True  = "Arbeit"
-                      workdayToString False = "  frei"
-                  in unlines $ map makeLine dates
-
-
-getCurrentTime :: IO LocalTime
-getCurrentTime = fmap zonedTimeToLocalTime getZonedTime
+makeTable :: [(Weekday, Bool)] -> Bool -> String
+makeTable dates colorsupport
+    = let makeLine :: (Weekday, Bool) -> String
+          makeLine (wd,bool) = "| " ++ show wd ++ "\t | " ++ (workdayToString bool) ++ " |"
+          workdayToString :: Bool -> String
+          workdayToString True  = condRed ++ "work" ++ condNormal
+          workdayToString False = "free"
+          condRed = if colorsupport then red else ""
+          condGreen = if colorsupport then green else ""
+          condNormal = if colorsupport then normal else ""
+      in unlines $ map makeLine dates
 
 main :: IO ()
 main = do
-  wd <- fmap formatTimeToWeekday getCurrentTime
+  cmdLineArgs <- getCommandLineArgs
+  color <- return (colorSupport cmdLineArgs)
+  today <- getToday
   workdays <- workDayList
-  putStr $ makeTable $ listNextDays wd 5 (\x -> elem x workdays)
+  putStr $ (\pairs -> makeTable pairs color) $ listNextDays today 5 (\x -> elem x workdays)

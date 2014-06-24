@@ -9,18 +9,33 @@ colorSupport args
     = elem (ColorSupport True) args
 
 -- Program logic
-getWorkDayTable :: (Weekday -> Bool) -> CalendarMonad (Weekday,Bool)
+getWorkDayTable :: (Day -> Bool) -> CalendarMonad (Weekday,Bool)
 getWorkDayTable workDay 
     = CalendarMonad $ \day -> let weekday = formatTimeToWeekday day
-                              in (dayNext day, (weekday, workDay weekday))
+                              in (dayNext day, (weekday, workDay day))
 
-workDayList :: IO [Weekday]
-workDayList = let weekdayString :: IO String
-                  weekdayString = fmap (maybe "" id) $ getConfigOption "default.workdays"
-              in fmap ((map read) . words) weekdayString
+regularWorkDays :: IO [Weekday]
+regularWorkDays = let weekdayString :: IO String
+                      weekdayString = fmap (maybe "" id) $ getConfigOption "default.workdays"
+                  in fmap ((map read) . words) weekdayString
+
+uniqueWorkDays :: IO [Day]
+uniqueWorkDays 
+    = let getString :: IO (Maybe String)
+          getString = getConfigOption "unique.workdays"
+          unpackMaybeString :: Maybe String -> String
+          unpackMaybeString = maybe "" id
+          stringToDays :: String -> [Day]
+          stringToDays s = map read (words s)
+      in fmap (stringToDays . unpackMaybeString) getString
          
+         
+isWorkDay :: (Weekday -> Bool) -> (Day -> Bool) -> Day -> Bool
+isWorkDay regular unique day
+    = regular (formatTimeToWeekday day) ||
+      (unique day)
 
-listNextDays :: Day -> Int -> (Weekday -> Bool) -> [(Weekday, Bool)]
+listNextDays :: Day -> Int -> (Day -> Bool) -> [(Weekday, Bool)]
 listNextDays startDate n procedure = let nd 0 accu = return accu
                                          nd m accu = do
                                            wd <- getWorkDayTable procedure 
@@ -45,5 +60,6 @@ main = do
   cmdLineArgs <- getCommandLineArgs
   color <- return (colorSupport cmdLineArgs)
   today <- getToday
-  workdays <- workDayList
-  putStr $ (\pairs -> makeTable pairs color) $ listNextDays today 5 (\x -> elem x workdays)
+  regular <- regularWorkDays
+  uniques <- uniqueWorkDays
+  putStr $ (\pairs -> makeTable pairs color) $ listNextDays today 5 (isWorkDay (`elem` regular) (`elem` uniques))

@@ -15,6 +15,7 @@ numberOfDays args
           findNmbr _ = False
           filterCorrectArgs = filter findNmbr args
           unwrapNmbr (NumberOfDays n) = n
+          unwrapNmbr e = error $ "numberOfDays: unwrapNmbr got wrong input" ++ show e
       in if filterCorrectArgs == []
          then 5
          else (unwrapNmbr $ last (filterCorrectArgs)) 

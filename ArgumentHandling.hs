@@ -26,16 +26,12 @@ parseColorSetting "always" = ColorSupport True
 parseColorSetting "never" = ColorSupport False
 parseColorSetting _ = error $ "Wrong color setting\n" ++ usage
 
-getFlags
-    = let order = Permute
-      in fmap (getOpt Permute options) getArgs
-
 checkArgErrors :: ([Argument], [String], [String]) -> ([Argument], [String])
-checkArgErrors (_, _, err:errs) = error err
+checkArgErrors (_, _, err:_) = error err
 checkArgErrors (args, unuseds, _) = (args, unuseds)
 
 checkUnused :: ([Argument], [String]) -> [Argument]
-checkUnused (_, unused:unuseds) = error $ usage ++ "Unknown Argument: " ++ unused ++ "\n"
+checkUnused (_, unused:_) = error $ usage ++ "Unknown Argument: " ++ unused ++ "\n"
 checkUnused (args, _) = args
 
 getCommandLineArgs :: IO [Argument]

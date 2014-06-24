@@ -34,7 +34,7 @@ makeTable dates colorsupport
           makeLine (wd,bool) = "| " ++ show wd ++ "\t | " ++ (workdayToString bool) ++ " |"
           workdayToString :: Bool -> String
           workdayToString True  = condRed ++ "work" ++ condNormal
-          workdayToString False = condGreen ++ "free" ++ condGreen
+          workdayToString False = condGreen ++ "free" ++ condNormal
           condRed = if colorsupport then red else ""
           condGreen = if colorsupport then green else ""
           condNormal = if colorsupport then normal else ""

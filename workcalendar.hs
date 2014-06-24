@@ -30,10 +30,10 @@ uniqueWorkDays
       in fmap (stringToDays . unpackMaybeString) getString
          
          
-isWorkDay :: (Weekday -> Bool) -> (Day -> Bool) -> Day -> Bool
+isWorkDay :: [Weekday] -> [Day] -> Day -> Bool
 isWorkDay regular unique day
-    = regular (formatTimeToWeekday day) ||
-      (unique day)
+    = elem (formatTimeToWeekday day) regular ||
+      (elem day unique)
 
 listNextDays :: Day -> Int -> (Day -> Bool) -> [(Weekday, Bool)]
 listNextDays startDate n procedure = let nd 0 accu = return accu
@@ -62,4 +62,4 @@ main = do
   today <- getToday
   regular <- regularWorkDays
   uniques <- uniqueWorkDays
-  putStr $ (\pairs -> makeTable pairs color) $ listNextDays today 5 (isWorkDay (`elem` regular) (`elem` uniques))
+  putStr $ (\pairs -> makeTable pairs color) $ listNextDays today 5 (isWorkDay regular uniques)

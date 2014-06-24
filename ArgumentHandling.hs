@@ -5,7 +5,7 @@ import System.Console.GetOpt
 import System.Environment
 
 -- Command line options
-data Argument = ColorSupport Bool
+data Argument = ColorSupport Bool | NumberOfDays Int
                 deriving (Show, Eq)
 
 usage :: String
@@ -17,7 +17,8 @@ usage =
 
 options :: [OptDescr Argument]
 options
-    = [ Option ['c'] ["color"] (ReqArg parseColorSetting "MODE") "Color mode settings: always, never" 
+    = [ Option ['c'] ["color"] (ReqArg parseColorSetting "MODE") "Color mode settings: always, never"
+      , Option ['n'] ["next-days"] (ReqArg (\x -> NumberOfDays (read x)) "INTEGER") "List upcomming INTEGER days"
       ]
 
 parseColorSetting :: String -> Argument

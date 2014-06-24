@@ -8,6 +8,17 @@ colorSupport :: [Argument] -> Bool
 colorSupport args
     = elem (ColorSupport True) args
 
+numberOfDays :: [Argument] -> Int
+numberOfDays args
+    = let findNmbr :: Argument -> Bool
+          findNmbr (NumberOfDays _) = True
+          findNmbr _ = False
+          filterCorrectArgs = filter findNmbr args
+          unwrapNmbr (NumberOfDays n) = n
+      in if filterCorrectArgs == []
+         then 5
+         else (unwrapNmbr $ last (filterCorrectArgs)) 
+
 -- Program logic
 getWorkDayTable :: (Day -> Bool) -> CalendarMonad (Weekday,Bool)
 getWorkDayTable workDay 
@@ -56,10 +67,15 @@ makeTable dates colorsupport
       in unlines $ map makeLine dates
 
 main :: IO ()
-main = do
-  cmdLineArgs <- getCommandLineArgs
-  color <- return (colorSupport cmdLineArgs)
-  today <- getToday
-  regular <- regularWorkDays
-  uniques <- uniqueWorkDays
-  putStr $ (\pairs -> makeTable pairs color) $ listNextDays today 5 (isWorkDay regular uniques)
+main =
+    getCommandLineArgs >>= \cmdLineArgs -> 
+        let color = colorSupport cmdLineArgs
+            howManyDays = numberOfDays cmdLineArgs
+        in getToday >>= \today -> 
+            regularWorkDays >>= \regular -> 
+                uniqueWorkDays >>= \uniques ->
+                let renderTable :: [(Weekday, Bool)] -> String
+                    renderTable pairs = makeTable pairs color
+                    generateInformation = listNextDays today howManyDays
+                                          (isWorkDay regular uniques)
+                in putStr $ renderTable $ generateInformation

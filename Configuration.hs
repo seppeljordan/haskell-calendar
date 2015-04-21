@@ -5,8 +5,8 @@ where
 import System.Directory
 import Data.Configurator
 import Data.Configurator.Types
-import Control.Monad.Except
 import Data.Text
+import Control.Exception (bracket)
 
 configFilePrefix :: String
 configFilePrefix = configDirPrefix ++ "/rc.conf"
@@ -36,10 +36,9 @@ createConfigDirIfMissing
       return exists
 
 loadConfig :: IO Config
-loadConfig = let actions = configFilePosition >>=
-                           \path -> (load [Required path])
+loadConfig = let actions = \path -> (load [Required path])
                  errorHandler = \_ -> return Data.Configurator.empty
-             in catchError actions errorHandler
+             in bracket configFilePosition actions errorHandler
 
 getConfigOption :: String -> IO (Maybe String)
 getConfigOption key = loadConfig >>=

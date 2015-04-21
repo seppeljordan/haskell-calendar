@@ -4,11 +4,10 @@ module Calendar (Weekday (..), Day, CalendarMonad (..),
                 
 where
 
-import Data.Time.Format
+import Data.Time.Format (defaultTimeLocale, formatTime, FormatTime)
 import Data.Time.Clock
 import Data.Time.Calendar
 import Control.Applicative
-import System.Locale
 
 data Weekday = Monday | Tuesday | Wednesday | Thursday | Friday | Saturday | Sunday
                deriving (Show, Eq, Enum, Read)

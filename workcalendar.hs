@@ -29,7 +29,7 @@ getWorkDayTable workDay
 regularWorkDays :: IO [Weekday]
 regularWorkDays = let weekdayString :: IO String
                       weekdayString = fmap (maybe "" id) $ getConfigOption "default.workdays"
-                  in fmap ((map read) . words) weekdayString
+                  in fmap (map read . words) weekdayString
 
 uniqueWorkDays :: IO [Day]
 uniqueWorkDays 

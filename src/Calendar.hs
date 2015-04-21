@@ -1,20 +1,48 @@
-module Calendar (Weekday (..), Day, CalendarMonad (..), 
-                 formatTimeToWeekday, getToday, 
-                 getCurrentWeekday, dayNext)
-                
+module Calendar ( Weekday (..)
+                , Day
+                , CalendarMonad (..)
+                , formatTimeToWeekday
+                , getToday
+                , getCurrentWeekday
+                )
+
 where
 
-import Data.Time.Format (defaultTimeLocale, formatTime, FormatTime)
-import Data.Time.Clock
-import Data.Time.Calendar
 import Control.Applicative
+    ( Applicative(..))
+import Control.Monad
+    ( Monad(..))
+import Data.Bool
+    ( otherwise)
+import Data.Functor
+    ( Functor(..))
+import Data.List
+    ( (++))
+import Data.Time.Calendar
+    ( Day)
+import Data.Time.Clock
+    ( utctDay
+    , getCurrentTime
+    )
+import Data.Time.Format
+    ( defaultTimeLocale
+    , formatTime
+    , FormatTime
+    )
+import Prelude
+    ( Enum(..)
+    , Eq(..)
+    , Read(..)
+    , Show(..)
+    , IO
+    , ($)
+    , error
+    )
 
 data Weekday = Monday | Tuesday | Wednesday | Thursday | Friday | Saturday | Sunday
                deriving (Show, Eq, Enum, Read)
 
-dayNext :: Day -> Day
-dayNext day = addDays 1 day
-
+-- | Convert the given `Day` to a `Weekday`.
 formatTimeToWeekday :: FormatTime a => a -> Weekday
 formatTimeToWeekday ft
     = let formatString = "%w"
@@ -25,7 +53,7 @@ formatTimeToWeekday ft
                        | s == "4" = Thursday
                        | s == "5" = Friday
                        | s == "6" = Saturday
-                       | otherwise = error $ 
+                       | otherwise = error $
                                      "stringToWd: only 0 - 6 are valid weekday codes, given was " ++ s
       in stringToWd $ formatTime defaultTimeLocale formatString ft
 

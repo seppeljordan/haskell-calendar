@@ -18,13 +18,13 @@ numberOfDays args
           unwrapNmbr e = error $ "numberOfDays: unwrapNmbr got wrong input" ++ show e
       in if filterCorrectArgs == []
          then 5
-         else (unwrapNmbr $ last (filterCorrectArgs)) 
+         else (unwrapNmbr $ last (filterCorrectArgs))
 
 -- Program logic
 getWorkDayTable :: (Day -> Bool) -> CalendarMonad (Weekday,Bool)
-getWorkDayTable workDay 
+getWorkDayTable workDay
     = CalendarMonad $ \day -> let weekday = formatTimeToWeekday day
-                              in (dayNext day, (weekday, workDay day))
+                              in (succ day, (weekday, workDay day))
 
 regularWorkDays :: IO [Weekday]
 regularWorkDays = let weekdayString :: IO String
@@ -32,7 +32,7 @@ regularWorkDays = let weekdayString :: IO String
                   in fmap (map read . words) weekdayString
 
 uniqueWorkDays :: IO [Day]
-uniqueWorkDays 
+uniqueWorkDays
     = let getString :: IO (Maybe String)
           getString = getConfigOption "unique.workdays"
           unpackMaybeString :: Maybe String -> String
@@ -40,8 +40,8 @@ uniqueWorkDays
           stringToDays :: String -> [Day]
           stringToDays s = map read (words s)
       in fmap (stringToDays . unpackMaybeString) getString
-         
-         
+
+
 isWorkDay :: [Weekday] -> [Day] -> Day -> Bool
 isWorkDay regular unique day
     = elem (formatTimeToWeekday day) regular ||
@@ -50,7 +50,7 @@ isWorkDay regular unique day
 listNextDays :: Day -> Int -> (Day -> Bool) -> [(Weekday, Bool)]
 listNextDays startDate n procedure = let nd 0 accu = return accu
                                          nd m accu = do
-                                           wd <- getWorkDayTable procedure 
+                                           wd <- getWorkDayTable procedure
                                            nd (m-1) (wd:accu)
                                          CalendarMonad runIt = nd n []
                                      in reverse $ snd $ (runIt startDate)
@@ -69,11 +69,11 @@ makeTable dates colorsupport
 
 main :: IO ()
 main =
-    getCommandLineArgs >>= \cmdLineArgs -> 
+    getCommandLineArgs >>= \cmdLineArgs ->
         let color = colorSupport cmdLineArgs
             howManyDays = numberOfDays cmdLineArgs
-        in getToday >>= \today -> 
-            regularWorkDays >>= \regular -> 
+        in getToday >>= \today ->
+            regularWorkDays >>= \regular ->
                 uniqueWorkDays >>= \uniques ->
                 let renderTable :: [(Weekday, Bool)] -> String
                     renderTable pairs = makeTable pairs color

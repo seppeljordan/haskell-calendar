@@ -5,6 +5,7 @@ let
     base
     time
     configurator
+    old-locale
   ]);
 in
   stdenv.mkDerivation {

@@ -1,3 +1,4 @@
+{-# LANGUAGE CPP #-}
 module Calendar ( Weekday (..)
                 , Day
                 , CalendarMonad (..)
@@ -25,10 +26,14 @@ import Data.Time.Clock
     , getCurrentTime
     )
 import Data.Time.Format
-    ( defaultTimeLocale
-    , formatTime
+    ( formatTime
     , FormatTime
     )
+#if MIN_VERSION_time(1,5,0)
+import Data.Time.Format (defaultTimeLocale)
+#else
+import System.Locale (defaultTimeLocale)
+#endif
 import Prelude
     ( Enum(..)
     , Eq(..)
